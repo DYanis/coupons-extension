@@ -16,7 +16,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === "enablePriceFieldSelection") {
     enablePriceFieldSelectionMode();
   } else if (message.action === "applyCodes") {
-    alert("Starting automation...");
     startAutomation(message.interval, message.applyTimeout);
   }
 });
@@ -171,7 +170,7 @@ function startAutomation(interval = 200, applyTimeout = 200) {
   let originalPrice = priceField.textContent.trim();
   let index = 0;
   automationRunning = true;
-  alert("Automation started.");
+
   const automationInterval = setInterval(() => {
     if (!automationRunning) {
       clearInterval(automationInterval);
@@ -243,10 +242,10 @@ function generatePromoCodes(
       );
     }
   } else {
-    // Generate a random code with or without special characters
+    // Generate a random string of specified length with or without special characters
     const allCharacters = useSpecialCharacters
       ? characters + specials
-      : characters + "12";
+      : characters;
     for (let i = 0; i < length; i++) {
       generatedCode += allCharacters.charAt(
         Math.floor(Math.random() * allCharacters.length)
