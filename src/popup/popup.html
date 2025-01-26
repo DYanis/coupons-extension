@@ -18,6 +18,17 @@
         list-style: none;
         margin-bottom: 5px;
       }
+      label {
+        display: block;
+        margin-top: 10px;
+      }
+      input {
+        width: 100%;
+        padding: 5px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
     </style>
   </head>
   <body>
@@ -28,6 +39,15 @@
     <button id="start-automation" style="margin-left: 10px">
       Start Automation
     </button>
+
+    <!-- Нови добавени елементи -->
+    <label for="interval">Interval Between Attempts (ms):</label>
+    <input type="number" id="interval" value="300" min="100" step="100" />
+
+    <label for="apply-timeout">Timeout After Apply (ms):</label>
+    <input type="number" id="apply-timeout" value="100" min="100" step="100" />
+    <!-- Край на новите елементи -->
+
     <script src="popup.js"></script>
   </body>
 </html>

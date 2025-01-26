@@ -5,6 +5,8 @@ let selectedElement = null;
 let applyButton = null;
 let priceField = null;
 let automationRunning = false;
+let promoCodes = [];
+let popularWords = [];
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "enableSelection") {
@@ -14,7 +16,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === "enablePriceFieldSelection") {
     enablePriceFieldSelectionMode();
   } else if (message.action === "applyCodes") {
-    startAutomation();
+    alert("Starting automation...");
+    startAutomation(message.interval, message.applyTimeout);
   }
 });
 
@@ -71,7 +74,6 @@ function selectInputElement(event) {
 
   if (element.tagName.toLowerCase() === "input" || element.isContentEditable) {
     selectedElement = element;
-    alert("Input field selected!");
   } else {
     alert("Please select a valid input field.");
   }
@@ -88,7 +90,6 @@ function selectApplyButtonElement(event) {
   const element = event.target;
 
   applyButton = element;
-  alert("Apply button selected!");
 
   disableApplyButtonSelectionMode();
 }
@@ -104,7 +105,6 @@ function selectPriceFieldElement(event) {
   priceField = element;
 
   element.style.outline = "2px dashed green";
-  alert("Price field selected!");
 
   disablePriceFieldSelectionMode();
 }
@@ -136,7 +136,26 @@ function disablePriceFieldSelectionMode() {
   document.removeEventListener("click", selectPriceFieldElement);
 }
 
-function startAutomation() {
+async function loadInitialData() {
+  try {
+    const promoCodesResponse = await fetch(
+      chrome.runtime.getURL("data/promo-codes.json")
+    );
+    const promoCodesData = await promoCodesResponse.json();
+    promoCodes = promoCodesData.promoCodes || [];
+
+    const popularWordsResponse = await fetch(
+      chrome.runtime.getURL("data/popular-words.json")
+    );
+    const popularWordsData = await popularWordsResponse.json();
+    popularWords = popularWordsData.popularWords || [];
+  } catch (error) {
+    console.error("Error loading data:", error);
+    alert("Failed to load initial data.");
+  }
+}
+
+function startAutomation(interval = 200, applyTimeout = 200) {
   if (!selectedElement || !applyButton || !priceField) {
     alert(
       "Please select an input field, an apply button, and a price field before starting the automation."
@@ -144,47 +163,104 @@ function startAutomation() {
     return;
   }
 
-  const promoCodes = [
-    "SAVE10",
-    "WELCOME15",
-    "ELECTROIT",
-    "DISCOUNT20",
-    "FREESHIP",
-    "SUMMER25",
-    "HOLIDAY30",
-  ];
+  if (promoCodes.length === 0) {
+    alert("No promo codes found.");
+    return;
+  }
 
   let originalPrice = priceField.textContent.trim();
   let index = 0;
   automationRunning = true;
-
-  const tryNextCode = () => {
-    if (!automationRunning || index >= promoCodes.length) {
-      alert("Automation stopped or all promo codes have been tested.");
+  alert("Automation started.");
+  const automationInterval = setInterval(() => {
+    if (!automationRunning) {
+      clearInterval(automationInterval);
+      alert("Automation stopped.");
       return;
     }
 
-    const currentCode = promoCodes[index];
-    selectedElement.value = currentCode;
-    selectedElement.dispatchEvent(new Event("input", { bubbles: true }));
+    let currentCode;
+    if (index < promoCodes.length) {
+      currentCode = promoCodes[index];
+    } else {
+      currentCode = generatePromoCodes(8, false, false, popularWords);
+    }
+
+    setNewPromoCode(currentCode);
+    applyButton.click();
 
     setTimeout(() => {
-      applyButton.click();
-
-      setTimeout(() => {
-        const currentPrice = priceField.textContent.trim();
-        if (currentPrice !== originalPrice) {
-          alert(`Price changed to ${currentPrice}! Stopping automation.`);
-          automationRunning = false;
-          return;
-        }
-
-        console.log(`Tried promo code: ${currentCode}`);
+      const currentPrice = priceField.textContent.trim();
+      if (currentPrice !== originalPrice) {
+        automationRunning = false;
+        clearInterval(automationInterval);
+        alert("Promo code applied successfully.");
+      } else {
         index++;
-        setTimeout(tryNextCode, 2000);
-      }, 1000);
-    }, 1000);
-  };
-
-  tryNextCode();
+      }
+    }, applyTimeout);
+  }, interval);
 }
+
+function generatePromoCodes(
+  length = 6,
+  usePopularWords = true,
+  useSpecialCharacters = false,
+  popularWordsJson = []
+) {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const specials = "!@#$%^&*";
+
+  let generatedCode = "";
+
+  if (usePopularWords) {
+    // Check if popular words are provided
+    if (popularWordsJson.length === 0) {
+      return;
+    }
+
+    // Select a random popular word from the provided list
+    const word =
+      popularWordsJson[Math.floor(Math.random() * popularWordsJson.length)];
+    // Generate a number divisible by 5 between 5 and 90 and add it before or after the word
+    const multiplesOfFive = Array.from(
+      { length: 90 / 5 },
+      (_, i) => (i + 1) * 5
+    ); // [5, 10, 15, ..., 90]
+    const randomDigit =
+      multiplesOfFive[Math.floor(Math.random() * multiplesOfFive.length)];
+    const position = Math.random() < 0.5 ? "before" : "after";
+
+    if (position === "before") {
+      generatedCode = randomDigit + word;
+    } else {
+      generatedCode = word + randomDigit;
+    }
+    // Fill the rest of the code with letters if necessary
+    while (generatedCode.length < length) {
+      generatedCode += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
+    }
+  } else {
+    // Generate a random code with or without special characters
+    const allCharacters = useSpecialCharacters
+      ? characters + specials
+      : characters + "12";
+    for (let i = 0; i < length; i++) {
+      generatedCode += allCharacters.charAt(
+        Math.floor(Math.random() * allCharacters.length)
+      );
+    }
+  }
+
+  return generatedCode;
+}
+
+function setNewPromoCode(promoCode) {
+  selectedElement.value = promoCode;
+  selectedElement.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+// Load promo codes and popular words once at initialization
+loadInitialData();

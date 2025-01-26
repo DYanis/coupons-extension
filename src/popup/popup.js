@@ -24,7 +24,17 @@ document.getElementById("select-price-field").addEventListener("click", () => {
 });
 
 document.getElementById("start-automation").addEventListener("click", () => {
+  const interval = parseInt(document.getElementById("interval").value, 10);
+  const applyTimeout = parseInt(
+    document.getElementById("apply-timeout").value,
+    10
+  );
+
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { action: "applyCodes" });
+    chrome.tabs.sendMessage(tabs[0].id, {
+      action: "applyCodes",
+      interval: interval,
+      applyTimeout: applyTimeout,
+    });
   });
 });

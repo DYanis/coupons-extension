@@ -8,6 +8,12 @@
   "background": {
     "service_worker": "background/background.js"
   },
+  "web_accessible_resources": [
+    {
+      "resources": ["data/promo-codes.json", "data/popular-words.json"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
