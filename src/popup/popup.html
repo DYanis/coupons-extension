@@ -1,50 +1,117 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Promo Codes</title>
+    <title>Promo Code Extension</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
       body {
-        font-family: Arial, sans-serif;
-        padding: 10px;
-        width: 300px;
+        font-family: "Arial", sans-serif;
+        padding: 15px;
+        width: 320px;
+        background: linear-gradient(135deg, #ffffff, #f9f9f9);
+        border-radius: 12px;
+        color: #333;
+      }
+      h3 {
+        text-align: center;
+        font-size: 1.5em;
+        color: #007bff;
+        margin-bottom: 20px;
       }
       button {
-        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background-color: #ff7043;
+        color: #fff;
+        border: none;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-bottom: 12px;
       }
-      ul {
-        padding: 0;
+      button:hover {
+        background-color: #e64a19;
       }
-      li {
-        list-style: none;
-        margin-bottom: 5px;
+      button i {
+        font-size: 1.1em;
       }
       label {
-        display: block;
-        margin-top: 10px;
+        font-size: 0.95em;
+        color: #555;
+        margin-bottom: 6px;
       }
       input {
-        width: 100%;
-        padding: 5px;
-        margin-top: 5px;
-        margin-bottom: 10px;
-        box-sizing: border-box;
+        width: 80%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 0.95em;
+        background: #fff;
+        color: #333;
+      }
+      input:focus {
+        outline: none;
+        border-color: #ff7043;
+        box-shadow: 0 0 6px rgba(255, 112, 67, 0.3);
+      }
+      input[type="checkbox"] {
+        width: auto;
+        margin-right: 1px;
+      }
+      .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+      .hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
-    <h3>Promo Code Extension</h3>
-    <button id="select-input">Select Input Field</button>
-    <button id="select-apply-button">Select Apply Button</button>
-    <button id="select-price-field">Select Price Field</button>
-    <button id="start-automation" style="margin-left: 10px">
-      Start Automation
+    <h3><i class="fas fa-tags"></i> Promo Code Extension</h3>
+
+    <button id="select-input">
+      <i class="fas fa-i-cursor"></i> Select Input Field
+    </button>
+    <button id="select-apply-button">
+      <i class="fas fa-mouse-pointer"></i> Select Apply Button
+    </button>
+    <button id="select-price-field">
+      <i class="fas fa-dollar-sign"></i> Select Price Field
     </button>
 
     <label for="interval">Interval Between Attempts (ms):</label>
-    <input type="number" id="interval" value="300" min="100" step="100" />
+    <input type="number" id="interval" value="100" min="0" step="50" />
 
     <label for="apply-timeout">Timeout After Apply (ms):</label>
-    <input type="number" id="apply-timeout" value="100" min="100" step="100" />
+    <input type="number" id="apply-timeout" value="100" min="0" step="50" />
+
+    <label for="length">Generated Promo Code Length:</label>
+    <input type="number" id="length" value="6" min="3" max="50" step="1" />
+
+    <div class="checkbox-container">
+      <input type="checkbox" id="use-popular-words" checked />
+      <label for="use-popular-words">Use Popular Words</label>
+    </div>
+
+    <div class="checkbox-container">
+      <input type="checkbox" id="use-special-characters" />
+      <label for="use-special-characters">Include Special Characters</label>
+    </div>
+
+    <button id="start-automation">
+      <i class="fas fa-play-circle"></i> Start Automation
+    </button>
 
     <script src="popup.js"></script>
   </body>

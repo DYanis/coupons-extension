@@ -16,7 +16,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === "enablePriceFieldSelection") {
     enablePriceFieldSelectionMode();
   } else if (message.action === "applyCodes") {
-    startAutomation(message.interval, message.applyTimeout);
+    startAutomation(
+      message.interval,
+      message.applyTimeout,
+      message.length,
+      message.usePopularWords,
+      message.useSpecialCharacters
+    );
+  } else if (message.action === "stopAutomation") {
+    stopAutomation();
   }
 });
 
@@ -154,7 +162,13 @@ async function loadInitialData() {
   }
 }
 
-function startAutomation(interval = 200, applyTimeout = 200) {
+function startAutomation(
+  interval = 100,
+  applyTimeout = 100,
+  length = 6,
+  usePopularWords = true,
+  useSpecialCharacters = false
+) {
   if (!selectedElement || !applyButton || !priceField) {
     alert(
       "Please select an input field, an apply button, and a price field before starting the automation."
@@ -174,7 +188,6 @@ function startAutomation(interval = 200, applyTimeout = 200) {
   const automationInterval = setInterval(() => {
     if (!automationRunning) {
       clearInterval(automationInterval);
-      alert("Automation stopped.");
       return;
     }
 
@@ -182,7 +195,12 @@ function startAutomation(interval = 200, applyTimeout = 200) {
     if (index < promoCodes.length) {
       currentCode = promoCodes[index];
     } else {
-      currentCode = generatePromoCodes(8, false, false, popularWords);
+      currentCode = generatePromoCodes(
+        length,
+        usePopularWords,
+        useSpecialCharacters,
+        popularWords
+      );
     }
 
     setNewPromoCode(currentCode);
@@ -201,10 +219,18 @@ function startAutomation(interval = 200, applyTimeout = 200) {
   }, interval);
 }
 
+function stopAutomation() {
+  if (automationRunning) {
+    automationRunning = false;
+  } else {
+    alert("Automation is not running.");
+  }
+}
+
 function generatePromoCodes(
-  length = 6,
-  usePopularWords = true,
-  useSpecialCharacters = false,
+  length,
+  usePopularWords,
+  useSpecialCharacters,
   popularWordsJson = []
 ) {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
