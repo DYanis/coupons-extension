@@ -7,6 +7,7 @@ let priceField = null;
 let automationRunning = false;
 let promoCodes = [];
 let popularWords = [];
+const usedCodes = new Set();
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "enableSelection") {
@@ -195,7 +196,7 @@ function startAutomation(
     if (index < promoCodes.length) {
       currentCode = promoCodes[index];
     } else {
-      currentCode = generatePromoCodes(
+      currentCode = generateUniquePromoCode(
         length,
         usePopularWords,
         useSpecialCharacters,
@@ -205,6 +206,7 @@ function startAutomation(
 
     setNewPromoCode(currentCode);
     applyButton.click();
+    usedCodes.add(currentCode);
 
     setTimeout(() => {
       const currentPrice = priceField.textContent.trim();
@@ -227,11 +229,11 @@ function stopAutomation() {
   }
 }
 
-function generatePromoCodes(
+function generateUniquePromoCode(
   length,
   usePopularWords,
   useSpecialCharacters,
-  popularWordsJson = []
+  popularWords
 ) {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const specials = "!@#$%^&*";
@@ -239,21 +241,8 @@ function generatePromoCodes(
   let generatedCode = "";
 
   if (usePopularWords) {
-    // Check if popular words are provided
-    if (popularWordsJson.length === 0) {
-      return;
-    }
-
-    // Select a random popular word from the provided list
-    const word =
-      popularWordsJson[Math.floor(Math.random() * popularWordsJson.length)];
-    // Generate a number divisible by 5 between 5 and 90 and add it before or after the word
-    const multiplesOfFive = Array.from(
-      { length: 90 / 5 },
-      (_, i) => (i + 1) * 5
-    ); // [5, 10, 15, ..., 90]
-    const randomDigit =
-      multiplesOfFive[Math.floor(Math.random() * multiplesOfFive.length)];
+    const word = popularWords[Math.floor(Math.random() * popularWords.length)];
+    const randomDigit = Math.floor(Math.random() * 18) * 5 + 5; // Generate multiples of 5 from 5 to 90
     const position = Math.random() < 0.5 ? "before" : "after";
 
     if (position === "before") {
@@ -261,22 +250,26 @@ function generatePromoCodes(
     } else {
       generatedCode = word + randomDigit;
     }
-    // Fill the rest of the code with letters if necessary
-    while (generatedCode.length < length) {
-      generatedCode += characters.charAt(
-        Math.floor(Math.random() * characters.length)
-      );
-    }
   } else {
-    // Generate a random string of specified length with or without special characters
     const allCharacters = useSpecialCharacters
       ? characters + specials
       : characters;
+
     for (let i = 0; i < length; i++) {
       generatedCode += allCharacters.charAt(
         Math.floor(Math.random() * allCharacters.length)
       );
     }
+  }
+
+  // Ensure the code is unique
+  if (usedCodes.has(generatedCode)) {
+    return generateUniquePromoCode(
+      length,
+      usePopularWords,
+      useSpecialCharacters,
+      popularWords
+    );
   }
 
   return generatedCode;

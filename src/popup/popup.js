@@ -2,6 +2,7 @@ document.getElementById("select-input").addEventListener("click", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     chrome.tabs.sendMessage(tabs[0].id, { action: "enableSelection" });
   });
+  window.close();
 });
 
 document.getElementById("select-apply-button").addEventListener("click", () => {
@@ -10,6 +11,7 @@ document.getElementById("select-apply-button").addEventListener("click", () => {
       action: "enableApplyButtonSelection",
     });
   });
+  window.close();
 });
 
 document.getElementById("select-price-field").addEventListener("click", () => {
@@ -18,6 +20,7 @@ document.getElementById("select-price-field").addEventListener("click", () => {
       action: "enablePriceFieldSelection",
     });
   });
+  window.close();
 });
 
 const startButton = document.getElementById("start-automation");
