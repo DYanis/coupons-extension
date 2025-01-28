@@ -54,3 +54,58 @@ startButton.addEventListener("click", () => {
     }
   });
 });
+
+// Save settings to storage
+function saveSettings() {
+  chrome.storage.sync.set(
+    {
+      interval: document.getElementById("interval").value,
+      applyTimeout: document.getElementById("apply-timeout").value,
+      length: document.getElementById("length").value,
+      usePopularWords: document.getElementById("use-popular-words").checked,
+      useSpecialCharacters: document.getElementById("use-special-characters")
+        .checked,
+    },
+    () => {
+      console.log("Settings saved.");
+    }
+  );
+}
+
+// Add event listeners to save settings on change
+document.getElementById("interval").addEventListener("input", saveSettings);
+document
+  .getElementById("apply-timeout")
+  .addEventListener("input", saveSettings);
+document.getElementById("length").addEventListener("input", saveSettings);
+document
+  .getElementById("use-popular-words")
+  .addEventListener("change", saveSettings);
+document
+  .getElementById("use-special-characters")
+  .addEventListener("change", saveSettings);
+
+// Load settings from storage
+function loadSettings() {
+  chrome.storage.sync.get(
+    {
+      interval: "1000",
+      applyTimeout: "500",
+      length: "6",
+      usePopularWords: true,
+      useSpecialCharacters: false,
+    },
+    (settings) => {
+      document.getElementById("interval").value = settings.interval;
+      document.getElementById("apply-timeout").value = settings.applyTimeout;
+      document.getElementById("length").value = settings.length;
+      document.getElementById("use-popular-words").checked =
+        settings.usePopularWords;
+      document.getElementById("use-special-characters").checked =
+        settings.useSpecialCharacters;
+    }
+  );
+}
+
+// Call loadSettings when the popup is opened
+document.addEventListener("DOMContentLoaded", loadSettings);
