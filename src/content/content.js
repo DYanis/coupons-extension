@@ -1,9 +1,9 @@
 let isSelectionEnabled = false;
 let isApplyButtonSelectionEnabled = false;
 let isPriceFieldSelectionEnabled = false;
-let selectedElement = null;
-let applyButton = null;
-let priceField = null;
+let selectedInputSelector = null;
+let applyButtonSelector = null;
+let priceFieldSelector = null;
 let automationRunning = false;
 let promoCodes = [];
 let popularWords = [];
@@ -11,11 +11,11 @@ const usedCodes = new Set();
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "enableSelection") {
-    enableSelectionMode();
+    enableSelectionMode("selection");
   } else if (message.action === "enableApplyButtonSelection") {
-    enableApplyButtonSelectionMode();
+    enableSelectionMode("applyButton");
   } else if (message.action === "enablePriceFieldSelection") {
-    enablePriceFieldSelectionMode();
+    enableSelectionMode("priceField");
   } else if (message.action === "applyCodes") {
     startAutomation(
       message.interval,
@@ -29,37 +29,58 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-function enableSelectionMode() {
-  isSelectionEnabled = true;
-  isApplyButtonSelectionEnabled = false;
-  isPriceFieldSelectionEnabled = false;
-  document.body.style.cursor = "crosshair";
-
-  document.addEventListener("mouseover", highlightElement);
-  document.addEventListener("mouseout", unhighlightElement);
-  document.addEventListener("click", selectInputElement);
+function blockAllEvents(event) {
+  if (
+    (isSelectionEnabled ||
+      isApplyButtonSelectionEnabled ||
+      isPriceFieldSelectionEnabled) &&
+    !event.target.matches(
+      "input, button, textarea, [contenteditable], div, span, p"
+    )
+  ) {
+    event.stopImmediatePropagation();
+    event.preventDefault();
+  }
 }
 
-function enableApplyButtonSelectionMode() {
-  isApplyButtonSelectionEnabled = true;
-  isSelectionEnabled = false;
-  isPriceFieldSelectionEnabled = false;
-  document.body.style.cursor = "pointer";
+function enableSelectionMode(mode) {
+  isSelectionEnabled = mode === "selection";
+  isApplyButtonSelectionEnabled = mode === "applyButton";
+  isPriceFieldSelectionEnabled = mode === "priceField";
 
+  document.body.style.cursor = mode === "selection" ? "crosshair" : "pointer";
+
+  document.addEventListener("click", blockAllEvents, true);
+  document.addEventListener("mousedown", blockAllEvents, true);
+  document.addEventListener("mouseup", blockAllEvents, true);
   document.addEventListener("mouseover", highlightElement);
   document.addEventListener("mouseout", unhighlightElement);
-  document.addEventListener("click", selectApplyButtonElement);
+
+  const selectionHandler =
+    mode === "selection"
+      ? selectInputElement
+      : mode === "applyButton"
+      ? selectApplyButtonElement
+      : selectPriceFieldElement;
+
+  document.addEventListener("click", selectionHandler, true);
 }
 
-function enablePriceFieldSelectionMode() {
-  isPriceFieldSelectionEnabled = true;
+function disableSelectionMode() {
   isSelectionEnabled = false;
   isApplyButtonSelectionEnabled = false;
-  document.body.style.cursor = "pointer";
+  isPriceFieldSelectionEnabled = false;
 
-  document.addEventListener("mouseover", highlightElement);
-  document.addEventListener("mouseout", unhighlightElement);
-  document.addEventListener("click", selectPriceFieldElement);
+  document.body.style.cursor = "default";
+
+  document.removeEventListener("click", blockAllEvents, true);
+  document.removeEventListener("mousedown", blockAllEvents, true);
+  document.removeEventListener("mouseup", blockAllEvents, true);
+  document.removeEventListener("mouseover", highlightElement);
+  document.removeEventListener("mouseout", unhighlightElement);
+  document.removeEventListener("click", selectInputElement, true);
+  document.removeEventListener("click", selectApplyButtonElement, true);
+  document.removeEventListener("click", selectPriceFieldElement, true);
 }
 
 function highlightElement(event) {
@@ -76,12 +97,12 @@ function selectInputElement(event) {
   if (!isSelectionEnabled) return;
 
   event.preventDefault();
-  event.stopPropagation();
+  event.stopImmediatePropagation();
 
   const element = event.target;
 
   if (element.tagName.toLowerCase() === "input" || element.isContentEditable) {
-    selectedElement = element;
+    selectedInputSelector = getElementSelector(element);
   } else {
     alert("Please select a valid input field.");
   }
@@ -93,55 +114,31 @@ function selectApplyButtonElement(event) {
   if (!isApplyButtonSelectionEnabled) return;
 
   event.preventDefault();
-  event.stopPropagation();
+  event.stopImmediatePropagation();
 
   const element = event.target;
+  applyButtonSelector = getElementSelector(element);
 
-  applyButton = element;
-
-  disableApplyButtonSelectionMode();
+  disableSelectionMode();
 }
 
 function selectPriceFieldElement(event) {
   if (!isPriceFieldSelectionEnabled) return;
 
   event.preventDefault();
-  event.stopPropagation();
+  event.stopImmediatePropagation();
 
   const element = event.target;
-
-  priceField = element;
-
+  priceFieldSelector = getElementSelector(element);
   element.style.outline = "2px dashed green";
 
-  disablePriceFieldSelectionMode();
+  disableSelectionMode();
 }
 
-function disableSelectionMode() {
-  isSelectionEnabled = false;
-  document.body.style.cursor = "default";
-
-  document.removeEventListener("mouseover", highlightElement);
-  document.removeEventListener("mouseout", unhighlightElement);
-  document.removeEventListener("click", selectInputElement);
-}
-
-function disableApplyButtonSelectionMode() {
-  isApplyButtonSelectionEnabled = false;
-  document.body.style.cursor = "default";
-
-  document.removeEventListener("mouseover", highlightElement);
-  document.removeEventListener("mouseout", unhighlightElement);
-  document.removeEventListener("click", selectApplyButtonElement);
-}
-
-function disablePriceFieldSelectionMode() {
-  isPriceFieldSelectionEnabled = false;
-  document.body.style.cursor = "default";
-
-  document.removeEventListener("mouseover", highlightElement);
-  document.removeEventListener("mouseout", unhighlightElement);
-  document.removeEventListener("click", selectPriceFieldElement);
+function getElementSelector(element) {
+  if (element.id) return `#${element.id}`;
+  if (element.className) return `.${Array.from(element.classList).join(".")}`;
+  return element.tagName.toLowerCase();
 }
 
 async function loadInitialData() {
@@ -170,7 +167,7 @@ function startAutomation(
   usePopularWords = true,
   useSpecialCharacters = false
 ) {
-  if (!selectedElement || !applyButton || !priceField) {
+  if (!selectedInputSelector || !applyButtonSelector || !priceFieldSelector) {
     alert(
       "Please select an input field, an apply button, and a price field before starting the automation."
     );
@@ -182,7 +179,7 @@ function startAutomation(
     return;
   }
 
-  let originalPrice = priceField.textContent.trim();
+  let originalPrice;
   let index = 0;
   automationRunning = true;
 
@@ -191,6 +188,19 @@ function startAutomation(
       clearInterval(automationInterval);
       return;
     }
+
+    const selectedElement = document.querySelector(selectedInputSelector);
+    const applyButton = document.querySelector(applyButtonSelector);
+    const priceField = document.querySelector(priceFieldSelector);
+
+    if (!selectedElement || !applyButton || !priceField) {
+      alert("One of the selected elements is missing on the page.");
+      automationRunning = false;
+      clearInterval(automationInterval);
+      return;
+    }
+
+    originalPrice = priceField.textContent.trim();
 
     let currentCode;
     if (index < promoCodes.length) {
@@ -204,7 +214,7 @@ function startAutomation(
       );
     }
 
-    setNewPromoCode(currentCode);
+    setNewPromoCode(selectedElement, currentCode);
     applyButton.click();
     usedCodes.add(currentCode);
 
@@ -235,7 +245,7 @@ function generateUniquePromoCode(
   useSpecialCharacters,
   popularWords
 ) {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   const specials = "!@#$%^&*";
 
   let generatedCode = "";
@@ -275,9 +285,9 @@ function generateUniquePromoCode(
   return generatedCode;
 }
 
-function setNewPromoCode(promoCode) {
-  selectedElement.value = promoCode;
-  selectedElement.dispatchEvent(new Event("input", { bubbles: true }));
+function setNewPromoCode(element, promoCode) {
+  element.value = promoCode;
+  element.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 // Load promo codes and popular words once at initialization
