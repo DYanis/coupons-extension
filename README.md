@@ -27,15 +27,15 @@ This Chrome Extension helps users find the best discounts by automatically apply
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/promo-code-extension.git
+   git clone https://github.com/{your-username}/coupons-extension.git
    ```
 2. Navigate to the project directory:
    ```bash
-   cd promo-code-extension
+   cd coupons-extension
    ```
 3. Zip the contents of the `src` folder:
    ```bash
-   zip -r promo-code-extension.zip src/
+   zip -r coupons-extension.zip src/
    ```
 4. Load the extension in Chrome:
    - Open `chrome://extensions/`
@@ -75,6 +75,8 @@ This extension requires the following permissions:
 ## Contributing
 
 Contributions are welcome! Feel free to submit a pull request or open an issue to improve the extension.
+
+---
 
 ## License
 
