@@ -33,11 +33,7 @@ This Chrome Extension helps users find the best discounts by automatically apply
    ```bash
    cd coupons-extension
    ```
-3. Zip the contents of the `src` folder:
-   ```bash
-   zip -r coupons-extension.zip src/
-   ```
-4. Load the extension in Chrome:
+3. Load the extension in Chrome:
    - Open `chrome://extensions/`
    - Enable **Developer Mode**.
    - Click **Load unpacked** and select the `src` folder.
