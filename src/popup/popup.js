@@ -61,7 +61,7 @@ startButton.addEventListener("click", () => {
       chrome.tabs.sendMessage(tabs[0].id, { action: "stopAutomation" });
       startButton.innerHTML =
         '<i class="fas fa-play-circle"></i> Start Automation';
-      startButton.style.backgroundColor = "#007bff";
+      startButton.style.backgroundColor = "#e64a19";
     }
   });
 });

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Promo Code Extension",
+  "name": "Promo Code Auto-Apply & Brute-Force Extension",
   "version": "1.0",
   "description": "Auto-apply promo codes and brute-force when needed.",
   "permissions": ["activeTab", "scripting", "storage"],
