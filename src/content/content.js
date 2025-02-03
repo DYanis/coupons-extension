@@ -1,9 +1,11 @@
 let isSelectionEnabled = false;
 let isApplyButtonSelectionEnabled = false;
 let isPriceFieldSelectionEnabled = false;
+let isRemoveButtonSelectionEnabled = false;
 let selectedInputSelector = null;
 let applyButtonSelector = null;
 let priceFieldSelector = null;
+let removeButtonSelector = null;
 let automationRunning = false;
 let promoCodes = [];
 let popularWords = [];
@@ -16,6 +18,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     enableSelectionMode("applyButton");
   } else if (message.action === "enablePriceFieldSelection") {
     enableSelectionMode("priceField");
+  } else if (message.action === "enableRemoveButtonSelection") {
+    enableSelectionMode("removeButton");
   } else if (message.action === "applyCodes") {
     startAutomation(
       message.interval,
@@ -33,7 +37,8 @@ function blockAllEvents(event) {
   if (
     (isSelectionEnabled ||
       isApplyButtonSelectionEnabled ||
-      isPriceFieldSelectionEnabled) &&
+      isPriceFieldSelectionEnabled ||
+      isRemoveButtonSelectionEnabled) &&
     !event.target.matches(
       "input, button, textarea, [contenteditable], div, span, p"
     )
@@ -47,6 +52,7 @@ function enableSelectionMode(mode) {
   isSelectionEnabled = mode === "selection";
   isApplyButtonSelectionEnabled = mode === "applyButton";
   isPriceFieldSelectionEnabled = mode === "priceField";
+  isRemoveButtonSelectionEnabled = mode === "removeButton";
 
   document.body.style.cursor = mode === "selection" ? "crosshair" : "pointer";
 
@@ -56,20 +62,17 @@ function enableSelectionMode(mode) {
   document.addEventListener("mouseover", highlightElement);
   document.addEventListener("mouseout", unhighlightElement);
 
-  const selectionHandler =
-    mode === "selection"
-      ? selectInputElement
-      : mode === "applyButton"
-      ? selectApplyButtonElement
-      : selectPriceFieldElement;
-
-  document.addEventListener("click", selectionHandler, true);
+  const selectionHandler = getSelectionHandler(mode);
+  if (selectionHandler) {
+    document.addEventListener("click", selectionHandler, true);
+  }
 }
 
 function disableSelectionMode() {
   isSelectionEnabled = false;
   isApplyButtonSelectionEnabled = false;
   isPriceFieldSelectionEnabled = false;
+  isRemoveButtonSelectionEnabled = false;
 
   document.body.style.cursor = "default";
 
@@ -81,6 +84,7 @@ function disableSelectionMode() {
   document.removeEventListener("click", selectInputElement, true);
   document.removeEventListener("click", selectApplyButtonElement, true);
   document.removeEventListener("click", selectPriceFieldElement, true);
+  document.removeEventListener("click", selectRemoveButtonElement, true);
 }
 
 function highlightElement(event) {
@@ -135,6 +139,18 @@ function selectPriceFieldElement(event) {
   disableSelectionMode();
 }
 
+function selectRemoveButtonElement(event) {
+  if (!isRemoveButtonSelectionEnabled) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  const element = event.target;
+  removeButtonSelector = getElementSelector(element);
+
+  disableSelectionMode();
+}
+
 function getElementSelector(element) {
   if (element.id) return `#${element.id}`;
   if (element.className) return `.${Array.from(element.classList).join(".")}`;
@@ -157,6 +173,21 @@ async function loadInitialData() {
   } catch (error) {
     console.error("Error loading data:", error);
     alert("Failed to load initial data.");
+  }
+}
+
+function getSelectionHandler(mode) {
+  switch (mode) {
+    case "selection":
+      return selectInputElement;
+    case "applyButton":
+      return selectApplyButtonElement;
+    case "priceField":
+      return selectPriceFieldElement;
+    case "removeButton":
+      return selectRemoveButtonElement;
+    default:
+      return null;
   }
 }
 
@@ -225,6 +256,12 @@ function startAutomation(
         clearInterval(automationInterval);
         alert("Promo code applied successfully.");
       } else {
+        const removeButton = removeButtonSelector
+          ? document.querySelector(removeButtonSelector)
+          : null;
+        if (removeButton) {
+          removeButton.click();
+        }
         index++;
       }
     }, applyTimeout);

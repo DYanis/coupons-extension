@@ -23,6 +23,17 @@ document.getElementById("select-price-field").addEventListener("click", () => {
   window.close();
 });
 
+document
+  .getElementById("select-remove-button")
+  .addEventListener("click", () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        action: "enableRemoveButtonSelection",
+      });
+    });
+    window.close();
+  });
+
 const startButton = document.getElementById("start-automation");
 let automationRunning = false;
 
