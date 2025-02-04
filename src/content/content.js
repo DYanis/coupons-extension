@@ -283,14 +283,14 @@ function generateUniquePromoCode(
   popularWords
 ) {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const specials = "!@#$%^&*";
+  const specials = "!@#$%^&*_-+=";
 
   let generatedCode = "";
 
   if (usePopularWords) {
     const word = popularWords[Math.floor(Math.random() * popularWords.length)];
     const randomDigit = Math.floor(Math.random() * 18) * 5 + 5; // Generate multiples of 5 from 5 to 90
-    const position = Math.random() < 0.5 ? "before" : "after";
+    const position = Math.random() < 0.1 ? "before" : "after"; // 10% chance of adding the digit before the word
 
     if (position === "before") {
       generatedCode = randomDigit + word;
