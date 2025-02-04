@@ -289,13 +289,23 @@ function generateUniquePromoCode(
 
   if (usePopularWords) {
     const word = popularWords[Math.floor(Math.random() * popularWords.length)];
-    const randomDigit = Math.floor(Math.random() * 18) * 5 + 5; // Generate multiples of 5 from 5 to 90
-    const position = Math.random() < 0.1 ? "before" : "after"; // 10% chance of adding the digit before the word
 
-    if (position === "before") {
-      generatedCode = randomDigit + word;
+    // Generate a random number between 0 and 18 (inclusive)
+    const randomMultiple = Math.floor(Math.random() * 19); // 0..18
+
+    // If randomMultiple == 0, do not add a digit; otherwise, calculate the digit
+    if (randomMultiple === 0) {
+      generatedCode = word;
     } else {
-      generatedCode = word + randomDigit;
+      const randomDigit = randomMultiple * 5; // Multiples of 5 in the range [5..90]
+
+      const position = Math.random() < 0.1 ? "before" : "after"; // 10% chance to add the number before the word
+
+      if (position === "before") {
+        generatedCode = randomDigit + word;
+      } else {
+        generatedCode = word + randomDigit;
+      }
     }
   } else {
     const allCharacters = useSpecialCharacters

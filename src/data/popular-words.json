@@ -113,6 +113,26 @@
     "VALENTINE",
     "CHRISTMAS",
     "HALLOWEEN",
-    "NEWYEAR"
+    "NEWYEAR",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+    "WEEKEND",
+    "JANUARY",
+    "FEBRUARY",
+    "MARCH",
+    "APRIL",
+    "MAY",
+    "JUNE",
+    "JULY",
+    "AUGUST",
+    "SEPTEMBER",
+    "OCTOBER",
+    "NOVEMBER",
+    "DECEMBER"
   ]
 }
