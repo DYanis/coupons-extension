@@ -83,3 +83,7 @@ This project is licensed under the [MIT License](LICENSE).
 ## Disclaimer
 
 This extension is intended for personal use only. Make sure to comply with the terms of use of the websites where you apply promo codes.
+
+## Download
+
+You can download this extension directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/promo-code-auto-apply-bru/ncioiacfnkimgobfieomdjjbgfomonga).
