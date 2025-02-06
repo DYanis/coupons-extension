@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Promo Code Auto-Apply & Brute-Force Extension",
+  "name": "Promo Code Smart Brute-Force",
   "version": "1.0.1",
-  "description": "Auto-apply promo codes and brute-force when needed.",
+  "description": "Use popular promo codes, auto-apply them, and employ smart brute-force methods with popular words when necessary.",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "background": {
