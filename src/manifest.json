@@ -3,7 +3,7 @@
   "name": "Promo Code Auto-Apply & Brute-Force Extension",
   "version": "1.0.1",
   "description": "Auto-apply promo codes and brute-force when needed.",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "background": {
     "service_worker": "background/background.js"

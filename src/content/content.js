@@ -299,8 +299,7 @@ function generateUniquePromoCode(
     } else {
       const randomDigit = randomMultiple * 5; // Multiples of 5 in the range [5..90]
 
-      const position = Math.random() < 0.1 ? "before" : "after"; // 10% chance to add the number before the word
-
+      const position = Math.random() < 0.05 ? "before" : "after"; // 5% chance to add the digit before the word
       if (position === "before") {
         generatedCode = randomDigit + word;
       } else {
